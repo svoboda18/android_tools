@@ -1,0 +1,9 @@
+[submodule "boot"]
+	path = boot
+	url = https://github.com/svoboda18/magiskboot
+[submodule "external/e2fsprogs/contrib/android/e2fstool"]
+	path = external/e2fsprogs/contrib/android/e2fstool
+	url = https://github.com/svoboda18/e2fstool
+[submodule "libnt"]
+	path = libnt
+	url = https://github.com/svoboda18/libnt
