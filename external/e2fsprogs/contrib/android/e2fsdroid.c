@@ -53,7 +53,7 @@ static char *absolute_path(const char *file)
 	char cwd[PATH_MAX];
 	if (file[0] != '/'
 #ifdef SVB_WIN32
-	|| file[1] != ':'
+	&& file[1] != ':'
 #endif
         ) {
 		if (getcwd(cwd, PATH_MAX) == NULL) {
