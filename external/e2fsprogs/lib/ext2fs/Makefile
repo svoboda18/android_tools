@@ -61,6 +61,7 @@ E2F_SRC = \
 	mmp.c \
 	mkdir.c \
 	mkjournal.c \
+	moto_io.c \
 	namei.c \
 	native.c \
 	newdir.c \

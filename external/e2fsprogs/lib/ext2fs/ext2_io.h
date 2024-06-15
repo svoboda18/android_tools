@@ -150,6 +150,10 @@ extern io_manager unixfd_io_manager;
 extern io_manager sparse_io_manager;
 extern io_manager sparsefd_io_manager;
 
+/* moto_io.c */
+extern io_manager moto_io_manager;
+extern io_manager motofd_io_manager;
+
 /* undo_io.c */
 extern io_manager undo_io_manager;
 extern errcode_t set_undo_io_backing_manager(io_manager manager);
