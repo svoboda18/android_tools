@@ -1,6 +1,5 @@
 # env controlled
 DEBUG ?= 0
-CROSS_COMPILE ?=
 SH ?= sh
 
 # Build configuration (static only, shared are broken)
@@ -8,7 +7,8 @@ override TOPDIR := $(shell cygpath -m $(shell pwd))
 override STATIC := 1
 override SVB_MINGW := 1
 override SVB_FLAGS := -DSVB_WIN32 -DANDROID
-override BUILD_FLAGS := -fno-exceptions -fdiagnostics-absolute-paths -Wno-deprecated-non-prototype \
+override BUILD_FLAGS := -fexceptions -fseh-exceptions -fdiagnostics-absolute-paths \
+						-Wno-deprecated-non-prototype -Wno-unused-command-line-argument \
 						-DHOST -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 override BUILD_EXTRAS := 1
 override BIN_EXT := .exe
@@ -20,12 +20,12 @@ override LIB_EXT := .dll
 endif
 
 ifeq ($(DEBUG),1)
-override BUILD_FLAGS += -ggdb -ffunction-sections -O0 -Wall -Wextra -Wpedantic -Wconversion-null -Wno-gnu-include-next
+override BUILD_FLAGS += -ggdb -ffunction-sections -O0 -Wall -Wextra -Wpedantic -Wno-gnu-include-next
 override SVB_FLAGS += -DSVB_DEBUG
 else
-override BUILD_FLAGS += -Oz
+override BUILD_FLAGS += -Oz -g -gcodeview
 endif
-override LDFLAGS := -Wl,-gc-sections
+override LDFLAGS := -Wl,--pdb= -Wl,-gc-sections
 
 ifeq ($(SVB_MINGW),1)
 override SVB_FLAGS += -DSVB_MINGW -DHAVE_LIB_NT_H -I$(TOPDIR)/libnt/include
@@ -34,21 +34,21 @@ else
 all:: print_info init_out res cyg
 endif
 
-override CC := $(CROSS_COMPILE)clang
+override CC := clang
 override CFLAGS := $(CFLAGS) $(BUILD_FLAGS) $(SVB_FLAGS)
-override CXX := $(CROSS_COMPILE)clang++
+override CXX := clang++ -fuse-ld=lld
 override CXXSTD := c++17
 override CXXLIB := libc++
 override CXXFLAGS := $(CXXFLAGS) -std=$(CXXSTD) -stdlib=$(CXXLIB) $(BUILD_FLAGS) $(SVB_FLAGS)
 # LD is set for shared libs
 ifeq ($(STATIC),0)
-override LD := $(CROSS_COMPILE)clang $(BUILD_FLAGS)
-override LDXX := $(CROSS_COMPILE)clang++ -std=$(CXXSTD) -stdlib=$(CXXLIB) $(BUILD_FLAGS) -static-libstdc++
+override LD := clang $(BUILD_FLAGS)
+override LDXX := clang++ -std=$(CXXSTD) -stdlib=$(CXXLIB) $(BUILD_FLAGS) -static-libstdc++
 #override LDFLAGS += -Wl,--large-address-aware
 endif
-override STRIP_CMD := $(CROSS_COMPILE)strip
+override STRIP_CMD := llvm-strip
 override STRIPFLAGS := $(STRIPFLAGS) --strip-all -R .comment -R .gnu.version --strip-unneeded
-override AR := $(CROSS_COMPILE)ar
+override AR := llvm-ar
 override ARFLAGS := rcsD
 
 override DEPLOY := $(TOPDIR)/build
@@ -204,5 +204,6 @@ deploy: all
 	@echo -e "  DEPLOY    `basename $(DEPLOY)`"
 	@cp -rpf $(BUILD_FILES) \
 	    $(BUILD_SHARED) \
+		$(OUT)/*.pdb \
 	    $(DEPLOY)
 	@$(MAKE) $(MAKEFLAGS) stamp
