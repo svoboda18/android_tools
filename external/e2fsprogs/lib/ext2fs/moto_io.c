@@ -28,7 +28,7 @@ static struct struct_io_manager struct_moto_manager = {
 	.open			= moto_open,
 	.close			= moto_close,
 };
-static struct struct_io_manager struct_sparsefd_manager = {
+static struct struct_io_manager struct_motofd_manager = {
 	.magic			= EXT2_ET_MAGIC_IO_MANAGER,
 	.name			= "MOTO sparse fd I/O Manager",
 	.open			= moto_open,
@@ -386,10 +386,7 @@ static errcode_t moto_read_blk64(io_channel channel, blk64_t block,
 	if (check_block_size(channel, sm))
 		return EXT2_ET_UNEXPECTED_BLOCK_SIZE;
 
-	if (channel->block_size == SUPERBLOCK_OFFSET)
-		block += 128;
-	else
-		block += 32;
+	block += (4096 * 32) / channel->block_size;
 
 	if (count < 0) { //partial read
 		count = -count;
